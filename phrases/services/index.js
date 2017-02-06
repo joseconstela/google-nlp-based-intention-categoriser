@@ -1,0 +1,1 @@
+exports.reminders = require('./reminders')
