@@ -7,21 +7,45 @@ var phrases = require('../phrases')
 var tools = require('./tools')
 
 let Categorizer = {
-  entities: {},
-  lemmas: {},
-  matches: {}
+  entities: [],
+  lemmas: [],
+  counter: {},
+  match: {}
 }
 
-function CategorizerBuildMatch() {
+function CategorizerBuildCount() {
 
+  let assign = (type, subtype, points) => {
+    if (!!Categorizer.counter[type]) {
+      if (!!Categorizer.counter[type][subtype]) {
+        Categorizer.counter[type][subtype] = 
+          Categorizer.counter[type][subtype] + points
+      }
+      else {
+        Categorizer.counter[type][subtype] = 1
+      }
+    }
+    else {
+      Categorizer.counter[type] = {}
+      Categorizer.counter[type][subtype] = points
+    }
+  }
+
+  _.map(Categorizer.entities, (c) => {
+    assign(c.type, c.subtype, 1.2)
+  })
+  _.map(Categorizer.lemmas, (c) => {
+    assign(c.type, c.subtype, 1)
+  })
+  console.log(Categorizer.counter)
 }
 
 function CategorizerAddEntities(type, subtype, entities) {
-  Categorizer.entities[type] = { subtype: _.map(entities, (e) => e.name) }
+  Categorizer.entities.push({type, subtype, entities})
 }
 
 function CategorizerAddLemmas(type, subtype, lemmas) {
-  Categorizer.lemmas[type] = { subtype: _.map(lemmas, (e) => e.lemma) }
+  Categorizer.lemmas.push({type, subtype, lemmas})
 }
 
 /**
@@ -66,7 +90,7 @@ function categorize(phrase) {
   }
 
   // Añadir los resultados de análisis a Categorizer
-  CategorizerBuildMatch()
+  CategorizerBuildCount()
 
   // Devolver Categorizer
   return Categorizer

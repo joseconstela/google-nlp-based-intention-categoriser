@@ -22,7 +22,7 @@ exports.process = (phrase) => {
   let categorizerResult = nlp.categorizer.categorize(phrase)
 
   console.log(
-    util.inspect(categorizerResult.lemmas, false, null)
+    //util.inspect(categorizerResult, false, null)
   )
   
 }
