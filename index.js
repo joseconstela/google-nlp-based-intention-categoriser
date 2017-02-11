@@ -17,8 +17,13 @@ loopPhrases((type, subtype, phrase) => {
   processor.checkNlp(type, subtype, phrase)
 })
 
-processor.process(phrases.others_.chistes.phrases[0])
-return
 loopPhrases((type, subtype, phrase) => {
+
+  var r = {
+    input: phrase.input,
+    output: processor.process(phrase) || {}
+  }
+  console.log(JSON.stringify(r, ' ', 2))
+
   processor.process(phrase)
 })

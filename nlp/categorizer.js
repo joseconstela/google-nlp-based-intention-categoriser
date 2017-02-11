@@ -6,12 +6,7 @@ var lodashQuery = require("lodash-query")(_);
 var phrases = require('../phrases')
 var tools = require('./tools')
 
-let Categorizer = {
-  entities: [],
-  lemmas: [],
-  counter: {},
-  match: {}
-}
+let Categorizer
 
 function CategorizerBuildCount() {
 
@@ -37,15 +32,37 @@ function CategorizerBuildCount() {
   _.map(Categorizer.lemmas, (c) => {
     assign(c.type, c.subtype, 1)
   })
-  console.log(Categorizer.counter)
+
+  Categorizer.points = _
+    .chain(Categorizer.counter)
+    .map((subTypes, type) => {
+      if (_.size(subTypes)===1) {
+        return _.map(subTypes, (value, name) => {
+          return {type: type, subType: name, value}
+        })[0]
+      }
+      var max = Object
+        .keys(subTypes)
+        .reduce((a, b) => { 
+          return subTypes[a] > subTypes[b] ? 
+            {value: subTypes[a], name: a} :
+            {value: subTypes[b], name: b}
+        });
+      return {type: type, subType: max.name, value: max.value}
+    })
+    .sortBy('value')
+    .reverse()
+    .value()
+
+  Categorizer.match = Categorizer.points ? Categorizer.points[0] : {}
 }
 
 function CategorizerAddEntities(type, subtype, entities) {
-  Categorizer.entities.push({type, subtype, entities})
+  Categorizer.entities.push({type, subtype, entities: _.map(entities, 'name')})
 }
 
 function CategorizerAddLemmas(type, subtype, lemmas) {
-  Categorizer.lemmas.push({type, subtype, lemmas})
+  Categorizer.lemmas.push({type, subtype, lemmas: _.map(lemmas, 'lemma')})
 }
 
 /**
@@ -53,10 +70,6 @@ function CategorizerAddLemmas(type, subtype, lemmas) {
  */
 function conditions(i, property) {
   if (!i || !i.conditions) return null 
-
-  if (property === 'lemmas') {
-
-  }
 
   if (!i.conditions[property]) return null
   return i.conditions[property]
@@ -68,20 +81,29 @@ function conditions(i, property) {
  */
 function categorize(phrase) {
 
+  Categorizer = {
+    entities: [],
+    lemmas: [],
+    counter: {},
+    points: [],
+    match: {}
+  }
+
   for(var type in phrases) {
     for(var subtype in phrases[type]) {
-      
+
       // Entities
       let conditionalEntities = conditions(phrases[type][subtype], 'entities')
-      var matchingEntities = tools.queryEntities(phrase.debug, {name: { $in: _.map(conditionalEntities, (e) => e.name) }})
+          conditionalEntities = tools.nonsensitive(conditionalEntities, ['name'])
+      var matchingEntities = tools.queryEntities(phrase.debug, conditionalEntities)
       if (matchingEntities) {
         CategorizerAddEntities(type, subtype, matchingEntities)
       }
 
-      // Entities
+      // Lemmas
       let conditionalLemmas = conditions(phrases[type][subtype], 'lemmas')
       let conditionalLemmasNames = _.map(conditionalLemmas, (e) => e.name)
-      var matchingLemmas = tools.queryLemmas(phrase.debug, {lemma: { $in: tools.insensitive(conditionalLemmasNames) }})
+      var matchingLemmas = tools.queryLemmas(phrase.debug, {lemma: { $in: tools.nonsensitive(conditionalLemmasNames) }})
       if (matchingLemmas) {
         CategorizerAddLemmas(type, subtype, matchingLemmas)
       }

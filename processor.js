@@ -16,13 +16,6 @@ exports.checkNlp = (type, subtype, phrase) => {
  * Process a phrase. Returns its type and subtype
  */
 exports.process = (phrase) => {
-  if (!phrase.debug) return
-
-  // Determinar a qué tipo y subtipo se refiere
-  let categorizerResult = nlp.categorizer.categorize(phrase)
-
-  console.log(
-    //util.inspect(categorizerResult, false, null)
-  )
-  
+  if (!phrase.debug) return {}
+  return nlp.categorizer.categorize(phrase)
 }

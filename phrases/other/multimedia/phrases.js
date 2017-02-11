@@ -1,4 +1,5 @@
-module.exports = [{
+module.exports = [
+  {
     'input': "Quiero escuchar música rock",
     "debug": {
       "sentences": [{
@@ -266,7 +267,7 @@ module.exports = [{
       "language": "es"
     }
   },
-  {
+  /*{
     'input': "Quiero escuchar música Shakira",
     "debug": {
       "sentences": [{
@@ -886,5 +887,5 @@ module.exports = [{
       },
       "language": "es"
     }
-  }
+  }*/
 ]
